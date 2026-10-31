@@ -1,0 +1,51 @@
+{
+    "name":  "dsh-sidebar-sections",
+    "version":  "1.0.3",
+    "description":  "Collapsible sections for the DSH sidebar: fold the workspace list and the footer status area into labelled header rows (client-only DOM enhancement, keeps the React tree untouched).",
+    "type":  "module",
+    "main":  "lib/index.js",
+    "exports":  {
+                    ".":  "./lib/index.js",
+                    "./client":  "./lib/client.js",
+                    "./package.json":  "./package.json"
+                },
+    "files":  [
+                  "lib/",
+                  "cordis.patch.yml",
+                  "dsh.plugin.json",
+                  "README.md",
+                  "README.zh.md",
+                  "LICENSE"
+              ],
+    "dsh":  {
+                "bundle":  {
+                               "patch":  "./cordis.patch.yml"
+                           },
+                "client":  {
+                               "platform":  "web",
+                               "immediately":  true
+                           }
+            },
+    "keywords":  [
+                     "dsh",
+                     "deepseek-harness",
+                     "plugin",
+                     "sidebar",
+                     "collapse",
+                     "ui"
+                 ],
+    "engines":  {
+                    "node":  "\u003e=22.6.0",
+                    "dsh":  "0.2.1-rc.3 || 0.2.1-rc.4 || 0.2.1-rc.5"
+                },
+    "license":  "MIT",
+    "repository":  {
+                       "type":  "git",
+                       "url":  "git+https://github.com/LeeScenic/dsh-sidebar-sections.git"
+                   },
+    "homepage":  "https://github.com/LeeScenic/dsh-sidebar-sections#readme",
+    "bugs":  {
+                 "url":  "https://github.com/LeeScenic/dsh-sidebar-sections/issues"
+             },
+    "author":  "LeeScenic"
+}
