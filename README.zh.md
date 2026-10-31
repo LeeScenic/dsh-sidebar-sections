@@ -14,21 +14,33 @@
 
 | 分区 | 宿主元素 | 里面是什么 |
 | --- | --- | --- |
-| 功能区 | `nav._panelList` | 插件 / 插件市场 / 定时任务 / MCP 连接器 / 更多 |
+| 功能区 | `nav._panelList` 以及「新会话」按钮到工作区之间的东西 | 插件 / 插件市场 / 定时任务 / MCP 连接器 / 更多 |
 | 工作区 | `div._regionArea` | `任务 / 频道 / 定时` 标签行 + 会话与工作区列表 |
-| 状态区 | `div._footArea` 里的 `div._footerActions` | Remote 入口、OpenCode GO 用量 |
+| 状态区 | `div._footArea` 里**除设置区以外的一切** | Remote 入口、用量卡片，以及以后任何东西 |
 
 默认就是「只展开工作区」——打开就是干净的一屏。
 
 设置区（`div._settingsArea`：呼叫按钮 + 账号头像）**永不参与折叠**，并且钉死在侧栏最底部，不随任何分区的开合上下移动。
 
+## 新加的东西会自动归位
+
+不按 class 名单点名，而是**按位置**判定：
+
+- 外壳里排在「新会话」之后、工作区之前的 → 功能区；
+- 外壳里排在工作区之后的（`.panelList` 之外的全部兄弟节点）→ 状态区；
+- `_footArea` 里的每个子元素 → 状态区，唯一的例外是设置区本身，以及任何**包含**设置区的容器（这样账号那排不会被一起藏掉）。
+
+所以宿主以后往侧栏底部加个入口、或者别的插件（例如用量卡片）自己 `insertBefore` 塞一张卡，都会被当次重渲染后的扫描收进状态区，不需要给本插件升级。
+
 ## 安装
 
 ```sh
-dsh plugin --profile web add "https://github.com/LeeScenic/dsh-sidebar-sections/releases/latest/download/dsh-sidebar-sections-1.0.3.tgz"
+dsh plugin --profile web add "https://github.com/LeeScenic/dsh-sidebar-sections/releases/latest/download/dsh-sidebar-sections-1.0.4.tgz"
 ```
 
-桌面版：`dsh plugin --profile desktop add "https://github.com/LeeScenic/dsh-sidebar-sections/releases/latest/download/dsh-sidebar-sections-1.0.3.tgz"`。
+桌面版：`dsh plugin --profile desktop add "https://github.com/LeeScenic/dsh-sidebar-sections/releases/latest/download/dsh-sidebar-sections-1.0.4.tgz"`。
+
+也可以直接从仓库装：`dsh plugin --profile desktop add "github:LeeScenic/dsh-sidebar-sections#v1.0.4"`。
 
 装完要**完全退出 DSH 再打开**——客户端 bundle 在启动时加载。
 
@@ -36,10 +48,10 @@ dsh plugin --profile web add "https://github.com/LeeScenic/dsh-sidebar-sections/
 
 纯浏览器半边插件（`dsh.client.platform = "web"`），不注册 slot、不改 React 树：
 
-1. 用 CSS Modules 的 **class 后缀**找宿主区块（`[class*="_regionArea"]` + 正则精确匹配），不写死构建哈希——宿主升级换了哈希也照样能找到。
-2. 折叠靠 `<html>` 上的 `data-dsh-sc-<key>` 属性 + 一行 `!important` 的 CSS，React 重渲染冲不掉隐藏状态。
-3. 标题条自己可能在重渲染里被丢掉，所以 `MutationObserver`（rAF 去抖）+ 1500ms 兜底定时器会把它补回去。
-4. 整栏折叠成窄条时（父容器 `clientWidth < 96`）标题条自动隐藏，避免挤成一列竖字。
+1. 用 CSS Modules 的 **class 后缀**定位三个锚点（`_regionArea` / `_footArea` / `_panelList` / `_newSession` / `_settingsArea`），正则 `(^|\s)[A-Za-z0-9_-]*_<后缀>(\s|$)` 精确匹配，不写死构建哈希——宿主升级换了哈希也照样能找到。
+2. 给每块要折叠的元素打上 `data-dsh-sc-part="panels|foot"`，折叠靠 `<html>` 上的 `data-dsh-sc-<key>` 属性 + 一行 `!important` 的 CSS，React 重渲染冲不掉隐藏状态；每次扫描按当前 DOM 重新归位，所以新出现的节点当次就被打上标记。
+3. 标题条自己可能在重渲染里被丢掉，所以 `MutationObserver`（childList + subtree，rAF 去抖）+ 1500ms 兜底定时器会把它补回去；同一个分区只保留一条标题条，位置变了的旧条会被清掉。
+4. 整栏折叠成窄条时（父容器 `clientWidth < 96`）标题条自动隐藏，功能区的图标栏也不会跟着被折叠，避免挤成一列竖字或空栏。
 5. 全程 try/catch：任何一次失败只 `console.warn`，绝不影响侧栏本身。
 
 ## 状态
@@ -50,7 +62,7 @@ dsh plugin --profile web add "https://github.com/LeeScenic/dsh-sidebar-sections/
 
 ## 兼容性
 
-DSH `0.2.1-rc.3` — `0.2.1-rc.5`，网页版与桌面版均可。除了侧栏的 CSS Modules 类名（按后缀匹配）之外，不依赖宿主任何内部实现。
+DSH `0.2.1-rc.3` — `0.2.1-rc.5`，网页版与桌面版均可。除了侧栏的 CSS Modules 类名（按后缀匹配）和「工作区在中间、底部区在最下面」这个位置约定之外，不依赖宿主任何内部实现。
 
 ## 文件
 

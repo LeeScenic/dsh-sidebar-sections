@@ -22,11 +22,21 @@ DSH 侧栏里的东西一多，整列就变得又长又挤。这个插件给侧�
 
 | 折叠条 | 管的是 | 内容 |
 | --- | --- | --- |
-| **功能区** | 宿主侧栏面板列表 `nav._panelList` | 插件、插件市场、定时任务、MCP 连接器、更多 |
+| **功能区** | `nav._panelList`，以及「新会话」按钮到工作区之间的东西 | 插件、插件市场、定时任务、MCP 连接器、更多 |
 | **工作区** | 工作区区域 `div._regionArea` | 任务 / 频道 / 定时 三个 tab，以及工作区与会话列表 |
-| **状态区** | 底部动作行 `div._footerActions`（在 `div._footArea` 里） | Remote 卡片、OpenCode GO 用量卡片等底部小组件 |
+| **状态区** | `div._footArea` 里**除设置区以外的一切** | Remote 卡片、OpenCode GO 用量卡片，以及以后任何东西 |
 
 三段互相独立。想只留工作区？把另外两根收起来就行 —— 这也正是默认状态。
+
+### 新加的东西会自动归位
+
+不按 class 名单点名，而是**按位置**判定：
+
+- 外壳里排在「新会话」之后、工作区之前的 → 功能区；
+- 外壳里排在工作区之后的（`.panelList` 之外的全部兄弟节点）→ 状态区；
+- `_footArea` 里的每个子元素 → 状态区，唯一的例外是设置区本身，以及任何**包含**设置区的容器（这样账号那排不会被一起藏掉）。
+
+所以宿主以后往侧栏底部加个入口、或者别的插件（例如用量卡片）自己 `insertBefore` 塞一张卡，都会被当次重扫描收进状态区，不需要给本插件升级。
 
 ### 账号与设置永远钉在最底部
 
@@ -35,23 +45,26 @@ DSH 侧栏里的东西一多，整列就变得又长又挤。这个插件给侧�
 ### 装上就能用
 
 ```sh
-dsh plugin --profile web add "https://github.com/LeeScenic/dsh-sidebar-sections/releases/latest/download/dsh-sidebar-sections-1.0.3.tgz"
+dsh plugin --profile web add "https://github.com/LeeScenic/dsh-sidebar-sections/releases/latest/download/dsh-sidebar-sections-1.0.4.tgz"
 ```
 
 桌面版把 `web` 换成 `desktop`：
 
 ```sh
-dsh plugin --profile desktop add "https://github.com/LeeScenic/dsh-sidebar-sections/releases/latest/download/dsh-sidebar-sections-1.0.3.tgz"
+dsh plugin --profile desktop add "https://github.com/LeeScenic/dsh-sidebar-sections/releases/latest/download/dsh-sidebar-sections-1.0.4.tgz"
 ```
+
+也可以直接从仓库装：`dsh plugin --profile desktop add "github:LeeScenic/dsh-sidebar-sections#v1.0.4"`。
 
 装完要**完全退出再打开** DSH —— 客户端 bundle 是启动时加载的。
 
 ### 几个细节
 
 - **纯客户端增强**：不注册槽位，不动宿主 React 树，只往页面里插 DOM 和一段 `<style>`，卸载后不留残渣。
-- **不写死样式哈希**：靠 `[class*="_regionArea"]` 这类后缀匹配加一条 `(^|\s)[A-Za-z0-9_-]*_<suffix>(\s|$)` 精确校验来定位区块，宿主升级换了 CSS Modules 哈希也照样能用。
+- **不写死样式哈希**：靠 `[class*="_regionArea"]` 这类后缀匹配加一条 `(^|\s)[A-Za-z0-9_-]*_<suffix>(\s|$)` 精确校验来定位锚点，宿主升级换了 CSS Modules 哈希也照样能用。
+- **按位置归位**：给要折叠的元素打 `data-dsh-sc-part="panels|foot"`，每次重扫描都按当前 DOM 重新判定，所以新插进来的卡片当次就被收进状态区。
 - **折叠状态扛得住重渲染**：折叠是 `<html>` 上的 `data-dsh-sc-<key>` 属性加一条 `!important` 规则，React 重绘不会把藏起来的区块弄回来。
-- **标题条会自己补回**：`MutationObserver`（rAF 去抖）加 1500 ms 兜底定时器，被重绘冲掉就重新插。
+- **标题条会自己补回**：`MutationObserver`（rAF 去抖）加 1500 ms 兜底定时器，被重绘冲掉就重新插；同一分区只留一条，旧的错位标题条会被清掉。
 - **窄栏自动隐藏**：侧栏收成图标条（`clientWidth < 96`）时标题条自动隐藏，不硬挤成一条竖线。
 - **出错不影响侧栏**：整段逻辑包在 try/catch 里，出问题只 `console.warn`。
 
@@ -88,12 +101,22 @@ folds with a single click.
 
 | Section | Host element | What it holds |
 | --- | --- | --- |
-| Panels | `nav._panelList` | Plugins / Plugin Market / Scheduled tasks / MCP connectors / More |
+| Panels | `nav._panelList`, plus everything between the new-session button and the workspace area | Plugins / Plugin Market / Scheduled tasks / MCP connectors / More |
 | Workspace | `div._regionArea` | the Tasks / Channels / Scheduled tabs and the session + workspace list |
-| Status | `div._footerActions` inside `div._footArea` | Remote entry, OpenCode GO usage |
+| Status | everything inside `div._footArea` **except the settings row** | Remote entry, OpenCode GO usage, and whatever comes next |
 
 The three are independent. The default is *Workspace only*: open the app and the workspace list is the
 only thing expanded.
+
+Nothing is named in a fixed class list — sections are decided **by position**:
+
+- at shell level, everything after the new-session button and before the workspace area → Panels;
+- at shell level, everything after the workspace area (the panel list aside) → Status;
+- every child of `_footArea` → Status, with one exception: the settings row itself, and any container
+  that *contains* it (so the account row is never hidden).
+
+So a footer entry the host adds later, or a card another plugin `insertBefore`s into the footer, is
+folded into Status on the next rescan — no update of this plugin required.
 
 The settings row (`div._settingsArea`: the call button and your account avatar) is **never** folded and
 is pinned to the very bottom of the sidebar, so it does not move when sections open or close.
@@ -101,10 +124,11 @@ is pinned to the very bottom of the sidebar, so it does not move when sections o
 ### Install
 
 ```sh
-dsh plugin --profile web add "https://github.com/LeeScenic/dsh-sidebar-sections/releases/latest/download/dsh-sidebar-sections-1.0.3.tgz"
+dsh plugin --profile web add "https://github.com/LeeScenic/dsh-sidebar-sections/releases/latest/download/dsh-sidebar-sections-1.0.4.tgz"
 ```
 
-Desktop profile: `dsh plugin --profile desktop add "https://github.com/LeeScenic/dsh-sidebar-sections/releases/latest/download/dsh-sidebar-sections-1.0.3.tgz"`.
+Desktop profile: `dsh plugin --profile desktop add "https://github.com/LeeScenic/dsh-sidebar-sections/releases/latest/download/dsh-sidebar-sections-1.0.4.tgz"`,
+or straight from the repo: `dsh plugin --profile desktop add "github:LeeScenic/dsh-sidebar-sections#v1.0.4"`.
 
 Fully quit and reopen DSH after installing — client bundles are loaded at start-up.
 
@@ -116,13 +140,16 @@ tree:
 1. Sections are located by CSS Modules **class suffix** (`[class*="_regionArea"]` plus an exact
    `(^|\s)[A-Za-z0-9_-]*_<suffix>(\s|$)` test), never by the build hash — a host upgrade that changes
    the hash keeps working.
-2. Folding is a `data-dsh-sc-<key>` attribute on `<html>` plus one `!important` CSS rule, so a React
+2. Fold candidates get `data-dsh-sc-part="panels|foot"` and are re-classified from the live DOM on
+   every rescan, so a node inserted later is folded the same tick it appears.
+3. Folding is a `data-dsh-sc-<key>` attribute on `<html>` plus one `!important` CSS rule, so a React
    re-render cannot restore a hidden section.
-3. The header rows can themselves be dropped by a re-render, so a `MutationObserver` (rAF-debounced)
-   plus a 1500 ms safety timer puts them back.
-4. In the collapsed rail (`clientWidth < 96`) the header rows hide themselves instead of squeezing
-   into a vertical stack.
-5. Everything is wrapped in try/catch: a failure only `console.warn`s and never breaks the sidebar.
+4. The header rows can themselves be dropped by a re-render, so a `MutationObserver` (rAF-debounced)
+   plus a 1500 ms safety timer puts them back; a section keeps exactly one header row, stale ones are
+   removed.
+5. In the collapsed rail (`clientWidth < 96`) the header rows hide themselves instead of squeezing
+   into a vertical stack, and the icon strip is never folded.
+6. Everything is wrapped in try/catch: a failure only `console.warn`s and never breaks the sidebar.
 
 ### State
 

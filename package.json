@@ -1,7 +1,7 @@
 {
     "name":  "dsh-sidebar-sections",
-    "version":  "1.0.3",
-    "description":  "Collapsible sections for the DSH sidebar: fold the workspace list and the footer status area into labelled header rows (client-only DOM enhancement, keeps the React tree untouched).",
+    "version":  "1.0.4",
+    "description":  "Collapsible sections for the DSH sidebar: fold the functions list, the workspace list and the footer status area behind labelled header rows. Sections are identified by position, so cards the host or other plugins append to the sidebar footer are folded automatically (client-only DOM enhancement, keeps the React tree untouched).",
     "type":  "module",
     "main":  "lib/index.js",
     "exports":  {
