@@ -1,7 +1,16 @@
 # dsh-sidebar-sections
 
-给 DeepSeek Harness 左侧栏加可折叠的分区标题条：把侧栏切成 **功能区 / 工作区 / 状态区** 三段，
-每段点一下收起、再点展开。
+[English](README.md) · **简体中文**
+
+给 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 左侧栏加可折叠的分区标题条：把侧栏切成 **功能区 / 工作区 / 状态区** 三段，每段点一下收起、再点展开。
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/screenshots/sidebar-expanded.png" width="230" alt="三段都展开"><br><sub>三段都展开</sub></td>
+    <td align="center"><img src="docs/screenshots/sidebar-workspace-only.png" width="230" alt="只留工作区"><br><sub>只留工作区</sub></td>
+    <td align="center"><img src="docs/screenshots/sidebar-collapsed.png" width="230" alt="全部收起"><br><sub>全部收起，账号那排钉在最底部</sub></td>
+  </tr>
+</table>
 
 | 分区 | 宿主元素 | 里面是什么 |
 | --- | --- | --- |
@@ -11,8 +20,7 @@
 
 默认就是「只展开工作区」——打开就是干净的一屏。
 
-设置区（`div._settingsArea`：呼叫按钮 + 账号头像）**永不参与折叠**，并且钉死在侧栏最底部，
-不随任何分区的开合上下移动。
+设置区（`div._settingsArea`：呼叫按钮 + 账号头像）**永不参与折叠**，并且钉死在侧栏最底部，不随任何分区的开合上下移动。
 
 ## 安装
 
@@ -28,26 +36,21 @@ dsh plugin --profile web add "https://github.com/LeeScenic/dsh-sidebar-sections/
 
 纯浏览器半边插件（`dsh.client.platform = "web"`），不注册 slot、不改 React 树：
 
-1. 用 CSS Modules 的 **class 后缀**找宿主区块（`[class*="_regionArea"]` + 正则精确匹配），
-   不写死构建哈希——宿主升级换了哈希也照样能找到。
-2. 折叠靠 `<html>` 上的 `data-dsh-sc-<key>` 属性 + 一行 `!important` 的 CSS，
-   React 重渲染冲不掉隐藏状态。
+1. 用 CSS Modules 的 **class 后缀**找宿主区块（`[class*="_regionArea"]` + 正则精确匹配），不写死构建哈希——宿主升级换了哈希也照样能找到。
+2. 折叠靠 `<html>` 上的 `data-dsh-sc-<key>` 属性 + 一行 `!important` 的 CSS，React 重渲染冲不掉隐藏状态。
 3. 标题条自己可能在重渲染里被丢掉，所以 `MutationObserver`（rAF 去抖）+ 1500ms 兜底定时器会把它补回去。
 4. 整栏折叠成窄条时（父容器 `clientWidth < 96`）标题条自动隐藏，避免挤成一列竖字。
 5. 全程 try/catch：任何一次失败只 `console.warn`，绝不影响侧栏本身。
 
 ## 状态
 
-存在 `localStorage["dsh-sidebar-sections:v3"]`，形如 `{"panels":true,"region":false,"foot":true}`
-（`true` = 折叠）。
+存在 `localStorage["dsh-sidebar-sections:v3"]`，形如 `{"panels":true,"region":false,"foot":true}`（`true` = 折叠）。
 
-已知限制：DSH 桌面版每次启动换端口 → origin 变了 → 读不到上一次的记录，回到默认值。
-默认值本来就是「只展开工作区」，所以影响不大。
+已知限制：DSH 桌面版每次启动换端口 → origin 变了 → 读不到上一次的记录，回到默认值。默认值本来就是「只展开工作区」，所以影响不大。
 
 ## 兼容性
 
-DSH `0.2.1-rc.3` — `0.2.1-rc.5`，网页版与桌面版均可。除了侧栏的 CSS Modules 类名（按后缀匹配）
-之外，不依赖宿主任何内部实现。
+DSH `0.2.1-rc.3` — `0.2.1-rc.5`，网页版与桌面版均可。除了侧栏的 CSS Modules 类名（按后缀匹配）之外，不依赖宿主任何内部实现。
 
 ## 文件
 
@@ -57,6 +60,7 @@ DSH `0.2.1-rc.3` — `0.2.1-rc.5`，网页版与桌面版均可。除了侧栏�
 | `lib/index.js` | host 半边，空 `apply()`，只为让条目出现在 Loader 图里 |
 | `cordis.patch.yml` | bundle patch，insert 一行（纯新增，自带重复挂载守卫） |
 | `dsh.plugin.json` | 插件清单 |
+| `docs/screenshots/` | 上面那三张截图 |
 
 ## License
 
