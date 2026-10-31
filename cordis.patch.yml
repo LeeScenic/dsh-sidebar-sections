@@ -1,0 +1,24 @@
+# dsh-sidebar-sections bundle patch
+#
+# Assembly layer for DSH profiles whose bundle list includes this package.
+# A pure ADDITION: one insert row carrying an id no shipped entry uses. No
+# shipped row is disabled, renamed, or reconfigured here, so the patch stays
+# safe to compose with any other plugin's patch.
+#
+# The row exists so the loader has a host-side entry point (lib/index.js, which
+# installs nothing); every behaviour lives in the browser half (lib/client.js,
+# served through exports["./client"]).
+#
+# Duplicate guard: when this package is ALSO mounted by hand from the profile's
+# own cordis.patch.yml (the local development arrangement), two entries with the
+# same name would both activate and both inject the same DOM headers. The
+# `disabled` expression below turns this copy off in exactly that case — the
+# same guard shape dsh-better-sidebar ships, so the two arrangements can coexist.
+#
+# Install (recommended, official CLI):
+#   dsh plugin --profile <profile> add dsh-sidebar-sections
+
+- insert:
+    - id: dsh-sidebar-sections
+      name: dsh-sidebar-sections
+      disabled: !!js "[...ctx.loader.entries()].some((e) => e.options.name === 'dsh-sidebar-sections' && e.options.id !== 'dsh-sidebar-sections' && !e.disabled)"
