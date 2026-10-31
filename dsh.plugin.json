@@ -1,0 +1,20 @@
+{
+    "id":  "dsh-external/dsh-sidebar-sections",
+    "version":  "1.0.3",
+    "main":  "./lib/index.js",
+    "description":  "折叠左侧栏的「功能区 / 工作区 / 状态区」：三段各加一个可点击的标题条，点一下收起、再点展开，默认只展开工作区。状态区只收 Remote 与用量卡片，设置与账号始终留在最底部。纯浏览器半边，只加 DOM、不打宿主补丁，卸载后恢复原样。",
+    "engines":  {
+                    "dsh":  "0.2.1-rc.3 || 0.2.1-rc.4 || 0.2.1-rc.5"
+                },
+    "contributes":  {
+                        "tools":  [
+
+                                  ],
+                        "skills":  [
+
+                                   ]
+                    },
+    "client":  {
+                   "main":  "./lib/client.js"
+               }
+}
