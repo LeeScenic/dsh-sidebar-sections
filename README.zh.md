@@ -35,12 +35,12 @@
 ## 安装
 
 ```sh
-dsh plugin --profile web add "https://github.com/LeeScenic/dsh-sidebar-sections/releases/latest/download/dsh-sidebar-sections-1.0.4.tgz"
+dsh plugin --profile web add "https://github.com/LeeScenic/dsh-sidebar-sections/releases/latest/download/dsh-sidebar-sections-1.0.5.tgz"
 ```
 
-桌面版：`dsh plugin --profile desktop add "https://github.com/LeeScenic/dsh-sidebar-sections/releases/latest/download/dsh-sidebar-sections-1.0.4.tgz"`。
+桌面版：`dsh plugin --profile desktop add "https://github.com/LeeScenic/dsh-sidebar-sections/releases/latest/download/dsh-sidebar-sections-1.0.5.tgz"`。
 
-也可以直接从仓库装：`dsh plugin --profile desktop add "github:LeeScenic/dsh-sidebar-sections#v1.0.4"`。
+也可以直接从仓库装：`dsh plugin --profile desktop add "github:LeeScenic/dsh-sidebar-sections#v1.0.5"`。
 
 装完要**完全退出 DSH 再打开**——客户端 bundle 在启动时加载。
 
@@ -48,11 +48,12 @@ dsh plugin --profile web add "https://github.com/LeeScenic/dsh-sidebar-sections/
 
 纯浏览器半边插件（`dsh.client.platform = "web"`），不注册 slot、不改 React 树：
 
-1. 用 CSS Modules 的 **class 后缀**定位三个锚点（`_regionArea` / `_footArea` / `_panelList` / `_newSession` / `_settingsArea`），正则 `(^|\s)[A-Za-z0-9_-]*_<后缀>(\s|$)` 精确匹配，不写死构建哈希——宿主升级换了哈希也照样能找到。
-2. 给每块要折叠的元素打上 `data-dsh-sc-part="panels|foot"`，折叠靠 `<html>` 上的 `data-dsh-sc-<key>` 属性 + 一行 `!important` 的 CSS，React 重渲染冲不掉隐藏状态；每次扫描按当前 DOM 重新归位，所以新出现的节点当次就被打上标记。
-3. 标题条自己可能在重渲染里被丢掉，所以 `MutationObserver`（childList + subtree，rAF 去抖）+ 1500ms 兜底定时器会把它补回去；同一个分区只保留一条标题条，位置变了的旧条会被清掉。
-4. 整栏折叠成窄条时（父容器 `clientWidth < 96`）标题条自动隐藏，功能区的图标栏也不会跟着被折叠，避免挤成一列竖字或空栏。
-5. 全程 try/catch：任何一次失败只 `console.warn`，绝不影响侧栏本身。
+1. 用 CSS Modules 的 **class 后缀**定位锚点（`_regionArea` / `_footArea` / `_panelList` / `_newSession` / `_settingsArea`），正则 `(^|\s)[A-Za-z0-9_-]*_<后缀>(\s|$)` 精确匹配，不写死构建哈希——宿主升级换了哈希也照样能找到。
+2. 外壳取 `_regionArea` 与 `_footArea` 的**最低公共祖先**，不假设「区块的父节点就是外壳」：0.2.2 起宿主把 `nav._panelList` 与 `_regionArea` 收进了 `scrollRegion > scrollArea` 滚动容器（`data-sidebar-scrollport`），两者不再直接挂在外壳上，这条规则同时兼容新旧两种嵌套。
+3. 给每块要折叠的元素打上 `data-dsh-sc-part="panels|foot"`，折叠靠 `<html>` 上的 `data-dsh-sc-<key>` 属性 + 一行 `!important` 的 CSS，React 重渲染冲不掉隐藏状态；每次扫描按当前 DOM 重新归位，所以新出现的节点当次就被打上标记。
+4. 标题条自己可能在重渲染里被丢掉，所以 `MutationObserver`（childList + subtree，rAF 去抖）+ 1500ms 兜底定时器会把它补回去；同一个分区只保留一条标题条，位置变了的旧条会被清掉。
+5. 整栏折叠成窄条时（外壳 `clientWidth < 96`，对应宿主的 `data-sidebar-collapsed` 形态）标题条自动隐藏，功能区的图标栏也不会跟着被折叠，避免挤成一列竖字或空栏。
+6. 全程 try/catch：任何一次失败只 `console.warn`，绝不影响侧栏本身。
 
 ## 状态
 
@@ -62,7 +63,9 @@ dsh plugin --profile web add "https://github.com/LeeScenic/dsh-sidebar-sections/
 
 ## 兼容性
 
-DSH `0.2.1-rc.3` — `0.2.1-rc.5`，网页版与桌面版均可。除了侧栏的 CSS Modules 类名（按后缀匹配）和「工作区在中间、底部区在最下面」这个位置约定之外，不依赖宿主任何内部实现。
+DSH `0.2.1-rc.3` 起，网页版与桌面版均可；`0.2.1-rc.3` 与 `0.2.2-rc.2`（新滚动容器布局）都已实测。
+
+> 1.0.4 及以前在 `package.json` 里声明了 `engines.dsh: "0.2.1-rc.3 || 0.2.1-rc.4 || 0.2.1-rc.5"`。DSH 0.2.2 把 `engines.dsh` 当成**硬门禁**：不满足就跳过整个 bundle（记进 `skippedBundles`），于是插件静默失效。1.0.5 起不再声明该字段——本插件只做 DOM 增强、找不到锚点就安静地什么都不做，用版本号把人挡在外面只会变成「升级后突然没了」。
 
 ## 文件
 

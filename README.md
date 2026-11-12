@@ -45,16 +45,16 @@ DSH 侧栏里的东西一多，整列就变得又长又挤。这个插件给侧�
 ### 装上就能用
 
 ```sh
-dsh plugin --profile web add "https://github.com/LeeScenic/dsh-sidebar-sections/releases/latest/download/dsh-sidebar-sections-1.0.4.tgz"
+dsh plugin --profile web add "https://github.com/LeeScenic/dsh-sidebar-sections/releases/latest/download/dsh-sidebar-sections-1.0.5.tgz"
 ```
 
 桌面版把 `web` 换成 `desktop`：
 
 ```sh
-dsh plugin --profile desktop add "https://github.com/LeeScenic/dsh-sidebar-sections/releases/latest/download/dsh-sidebar-sections-1.0.4.tgz"
+dsh plugin --profile desktop add "https://github.com/LeeScenic/dsh-sidebar-sections/releases/latest/download/dsh-sidebar-sections-1.0.5.tgz"
 ```
 
-也可以直接从仓库装：`dsh plugin --profile desktop add "github:LeeScenic/dsh-sidebar-sections#v1.0.4"`。
+也可以直接从仓库装：`dsh plugin --profile desktop add "github:LeeScenic/dsh-sidebar-sections#v1.0.5"`。
 
 装完要**完全退出再打开** DSH —— 客户端 bundle 是启动时加载的。
 
@@ -63,6 +63,7 @@ dsh plugin --profile desktop add "https://github.com/LeeScenic/dsh-sidebar-secti
 - **纯客户端增强**：不注册槽位，不动宿主 React 树，只往页面里插 DOM 和一段 `<style>`，卸载后不留残渣。
 - **不写死样式哈希**：靠 `[class*="_regionArea"]` 这类后缀匹配加一条 `(^|\s)[A-Za-z0-9_-]*_<suffix>(\s|$)` 精确校验来定位锚点，宿主升级换了 CSS Modules 哈希也照样能用。
 - **按位置归位**：给要折叠的元素打 `data-dsh-sc-part="panels|foot"`，每次重扫描都按当前 DOM 重新判定，所以新插进来的卡片当次就被收进状态区。
+- **外壳靠最低公共祖先找**：外壳 = `_regionArea` 与 `_footArea` 的最低公共祖先，而不是「区块的父节点」。0.2.2 起宿主把 `nav._panelList` 和 `_regionArea` 一起收进了 `scrollRegion > scrollArea` 滚动容器（`data-sidebar-scrollport`），旧写法会把这层包裹当成外壳，新旧布局现在共用一条规则。
 - **折叠状态扛得住重渲染**：折叠是 `<html>` 上的 `data-dsh-sc-<key>` 属性加一条 `!important` 规则，React 重绘不会把藏起来的区块弄回来。
 - **标题条会自己补回**：`MutationObserver`（rAF 去抖）加 1500 ms 兜底定时器，被重绘冲掉就重新插；同一分区只留一条，旧的错位标题条会被清掉。
 - **窄栏自动隐藏**：侧栏收成图标条（`clientWidth < 96`）时标题条自动隐藏，不硬挤成一条竖线。
@@ -76,7 +77,9 @@ dsh plugin --profile desktop add "https://github.com/LeeScenic/dsh-sidebar-secti
 
 ### 兼容性
 
-DSH `0.2.1-rc.3` — `0.2.1-rc.5`，web 与 desktop 都行。除了侧栏那几个 CSS Modules 类名（按后缀匹配），不向宿主索要任何东西。
+DSH `0.2.1-rc.3` 起，web 与 desktop 都行；`0.2.1-rc.3` 与 `0.2.2-rc.2`（新的滚动容器布局）都已实测。
+
+> 1.0.4 及以前声明了 `engines.dsh: "0.2.1-rc.3 || 0.2.1-rc.4 || 0.2.1-rc.5"`。DSH 0.2.2 把 `engines.dsh` 当作硬门禁：不满足就跳过整个 bundle（记进 `skippedBundles`），插件于是静默失效。1.0.5 起去掉了这个字段——插件只做 DOM 增强、找不到锚点就安静地什么都不做，用版本号挡人只会让用户遇到「升级后突然没了」。
 
 ### 文件
 
@@ -124,11 +127,11 @@ is pinned to the very bottom of the sidebar, so it does not move when sections o
 ### Install
 
 ```sh
-dsh plugin --profile web add "https://github.com/LeeScenic/dsh-sidebar-sections/releases/latest/download/dsh-sidebar-sections-1.0.4.tgz"
+dsh plugin --profile web add "https://github.com/LeeScenic/dsh-sidebar-sections/releases/latest/download/dsh-sidebar-sections-1.0.5.tgz"
 ```
 
-Desktop profile: `dsh plugin --profile desktop add "https://github.com/LeeScenic/dsh-sidebar-sections/releases/latest/download/dsh-sidebar-sections-1.0.4.tgz"`,
-or straight from the repo: `dsh plugin --profile desktop add "github:LeeScenic/dsh-sidebar-sections#v1.0.4"`.
+Desktop profile: `dsh plugin --profile desktop add "https://github.com/LeeScenic/dsh-sidebar-sections/releases/latest/download/dsh-sidebar-sections-1.0.5.tgz"`,
+or straight from the repo: `dsh plugin --profile desktop add "github:LeeScenic/dsh-sidebar-sections#v1.0.5"`.
 
 Fully quit and reopen DSH after installing — client bundles are loaded at start-up.
 
@@ -140,16 +143,19 @@ tree:
 1. Sections are located by CSS Modules **class suffix** (`[class*="_regionArea"]` plus an exact
    `(^|\s)[A-Za-z0-9_-]*_<suffix>(\s|$)` test), never by the build hash — a host upgrade that changes
    the hash keeps working.
-2. Fold candidates get `data-dsh-sc-part="panels|foot"` and are re-classified from the live DOM on
+2. The shell is the **lowest common ancestor** of `_regionArea` and `_footArea`, not "the parent of the
+   block": since 0.2.2 the host nests `nav._panelList` and `_regionArea` inside a
+   `scrollRegion > scrollArea` wrapper (`data-sidebar-scrollport`), so one rule covers both layouts.
+3. Fold candidates get `data-dsh-sc-part="panels|foot"` and are re-classified from the live DOM on
    every rescan, so a node inserted later is folded the same tick it appears.
-3. Folding is a `data-dsh-sc-<key>` attribute on `<html>` plus one `!important` CSS rule, so a React
+4. Folding is a `data-dsh-sc-<key>` attribute on `<html>` plus one `!important` CSS rule, so a React
    re-render cannot restore a hidden section.
-4. The header rows can themselves be dropped by a re-render, so a `MutationObserver` (rAF-debounced)
+5. The header rows can themselves be dropped by a re-render, so a `MutationObserver` (rAF-debounced)
    plus a 1500 ms safety timer puts them back; a section keeps exactly one header row, stale ones are
    removed.
-5. In the collapsed rail (`clientWidth < 96`) the header rows hide themselves instead of squeezing
+6. In the collapsed rail (`clientWidth < 96`) the header rows hide themselves instead of squeezing
    into a vertical stack, and the icon strip is never folded.
-6. Everything is wrapped in try/catch: a failure only `console.warn`s and never breaks the sidebar.
+7. Everything is wrapped in try/catch: a failure only `console.warn`s and never breaks the sidebar.
 
 ### State
 
@@ -162,8 +168,15 @@ so the practical effect is small.
 
 ### Compatibility
 
-DSH `0.2.1-rc.3` — `0.2.1-rc.5`, web and desktop. Requires nothing from the host beyond the sidebar's
-CSS Modules class names, which are matched by suffix.
+DSH `0.2.1-rc.3` and later, web and desktop; both `0.2.1-rc.3` and `0.2.2-rc.2` (the new scrolling
+shell) have been tested. Requires nothing from the host beyond the sidebar's CSS Modules class names,
+which are matched by suffix.
+
+> Up to 1.0.4 `package.json` declared `engines.dsh: "0.2.1-rc.3 || 0.2.1-rc.4 || 0.2.1-rc.5"`. DSH
+> 0.2.2 treats `engines.dsh` as a **hard gate**: if it is not satisfied the whole bundle is skipped
+> (recorded in `skippedBundles`) and the plugin silently stops working. 1.0.5 no longer declares the
+> field — this is a DOM-only enhancement that quietly does nothing when the anchors are missing, and
+> gating on a version number only produces "it vanished after the upgrade".
 
 ### Files
 
