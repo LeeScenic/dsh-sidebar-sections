@@ -76,6 +76,7 @@ DSH `0.2.1-rc.3` 起，网页版与桌面版均可；`0.2.1-rc.3` 与 `0.2.2-rc.
 | `cordis.patch.yml` | bundle patch，insert 一行（纯新增，自带重复挂载守卫） |
 | `dsh.plugin.json` | 插件清单 |
 | `docs/screenshots/` | 上面那三张截图 |
+| `AGENTS.md` | 给后续维护者（和 AI）看的约定：用户需求原文、0.2.2 的 DOM 契约、踩过的坑、发布前验证清单。**改代码前先读** |
 
 ## License
 

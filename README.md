@@ -90,6 +90,7 @@ DSH `0.2.1-rc.3` 起，web 与 desktop 都行；`0.2.1-rc.3` 与 `0.2.2-rc.2`（
 | `cordis.patch.yml` | bundle patch，insert 一行（纯新增，带重复挂载守卫） |
 | `dsh.plugin.json` | 插件清单 |
 | `docs/screenshots/` | 上面那三张截图 |
+| `AGENTS.md` | 给后续维护者（和 AI）看的约定：用户需求原文、0.2.2 的 DOM 契约、踩过的坑、发布前验证清单。**改代码前先读** |
 
 MIT License.
 
@@ -187,6 +188,7 @@ which are matched by suffix.
 | `cordis.patch.yml` | bundle patch, inserts the plugin row (pure addition, with a double-mount guard) |
 | `dsh.plugin.json` | plugin manifest |
 | `docs/screenshots/` | the three screenshots above |
+| `AGENTS.md` | maintenance contract for humans and agents: the user's requirements verbatim, the 0.2.2 DOM contract, every pitfall already paid for, and the pre-release verification checklist. **Read it before changing code.** |
 
 ### License
 
