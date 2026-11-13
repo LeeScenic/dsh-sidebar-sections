@@ -182,8 +182,13 @@ node --check lib/client.js
 git add -A
 git commit --amend --no-edit          # 未推送时统一 amend，保持一个提交
 git tag -f -a v1.0.5 -m "v1.0.5" HEAD
-git rev-parse HEAD ; git show v1.0.5 --no-patch --pretty=%H   # 两者必须相同
+git rev-parse HEAD ; git rev-parse "v1.0.5^{}"        # 两者必须相同（注意 ^{}，tag 是 annotated 对象）
 ```
+
+> 打 tag 之后仍然可以往 `main` 上加**文档类**提交（例如 AGENTS.md），这时 `HEAD` 会比 tag 新，
+> 属于正常状态：tag 应永远指向**发布用**的那个提交。验证发布内容时用 `git rev-parse "v1.0.5^{}"`，
+> 不要拿它跟 `HEAD` 比。要不要把 tag 挪到 HEAD 上，取决于这次提交是否改变了插件行为 ——
+> 只改文档就别动 tag，免得已发布资产的来源对不上。
 
 安装到本机（本地验证 / 交付）：
 
