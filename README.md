@@ -42,19 +42,27 @@ DSH 侧栏里的东西一多，整列就变得又长又挤。这个插件给侧�
 
 底部那一排（呼叫按钮、账号头像 `scenic`）**不跟着状态区一起折叠**，位置也不随任何折叠状态浮动，始终贴在侧栏最下面。
 
+### 强制外观要求（属于契约，改坏任何一条都算回归）
+
+- 工作区标题行里，「工作区」文字靠左，**搜索 / 筛选 / 新建那组图标必须贴着右边缘**——文字和图标之间留白，不许图标紧跟在文字后面。
+- 三条折叠条**像素级对齐**：起点 `x`、宽度、文字起点、chevron 位置完全一致。
+- 设置区永远钉在最底部，不参与任何折叠。
+- 工作区列表很长时**列表自身滚动**，标题行钉住不滚，最后一行完整可见，不被状态区切掉。
+- 整栏收成 48px 图标窄条时，三条折叠条自动隐藏，图标栏本身不折叠。
+
 ### 装上就能用
 
 ```sh
-dsh plugin --profile web add "https://github.com/LeeScenic/dsh-sidebar-sections/releases/latest/download/dsh-sidebar-sections-1.0.5.tgz"
+dsh plugin --profile web add "https://github.com/LeeScenic/dsh-sidebar-sections/releases/latest/download/dsh-sidebar-sections-1.0.6.tgz"
 ```
 
 桌面版把 `web` 换成 `desktop`：
 
 ```sh
-dsh plugin --profile desktop add "https://github.com/LeeScenic/dsh-sidebar-sections/releases/latest/download/dsh-sidebar-sections-1.0.5.tgz"
+dsh plugin --profile desktop add "https://github.com/LeeScenic/dsh-sidebar-sections/releases/latest/download/dsh-sidebar-sections-1.0.6.tgz"
 ```
 
-也可以直接从仓库装：`dsh plugin --profile desktop add "github:LeeScenic/dsh-sidebar-sections#v1.0.5"`。
+也可以直接从仓库装：`dsh plugin --profile desktop add "github:LeeScenic/dsh-sidebar-sections#v1.0.6"`。
 
 装完要**完全退出再打开** DSH —— 客户端 bundle 是启动时加载的。
 
@@ -125,14 +133,26 @@ folded into Status on the next rescan — no update of this plugin required.
 The settings row (`div._settingsArea`: the call button and your account avatar) is **never** folded and
 is pinned to the very bottom of the sidebar, so it does not move when sections open or close.
 
+### Mandatory visual contract (breaking any line of this is a regression)
+
+- In the workspace header row the "工作区" label stays left and the **search / filter / new icon group
+  must hug the right edge** — whitespace between label and icons, never icons tucked right after the
+  text.
+- The three header rows are **pixel-aligned**: identical `x`, width, label `x` and chevron `x`.
+- The settings row is always pinned to the bottom and never folded.
+- A long workspace list scrolls **inside itself**: the header row stays put and the last row remains
+  fully visible instead of being cut off by the status area.
+- When the sidebar collapses to the 48px icon rail the three header rows hide and the icon strip is
+  never folded.
+
 ### Install
 
 ```sh
-dsh plugin --profile web add "https://github.com/LeeScenic/dsh-sidebar-sections/releases/latest/download/dsh-sidebar-sections-1.0.5.tgz"
+dsh plugin --profile web add "https://github.com/LeeScenic/dsh-sidebar-sections/releases/latest/download/dsh-sidebar-sections-1.0.6.tgz"
 ```
 
-Desktop profile: `dsh plugin --profile desktop add "https://github.com/LeeScenic/dsh-sidebar-sections/releases/latest/download/dsh-sidebar-sections-1.0.5.tgz"`,
-or straight from the repo: `dsh plugin --profile desktop add "github:LeeScenic/dsh-sidebar-sections#v1.0.5"`.
+Desktop profile: `dsh plugin --profile desktop add "https://github.com/LeeScenic/dsh-sidebar-sections/releases/latest/download/dsh-sidebar-sections-1.0.6.tgz"`,
+or straight from the repo: `dsh plugin --profile desktop add "github:LeeScenic/dsh-sidebar-sections#v1.0.6"`.
 
 Fully quit and reopen DSH after installing — client bundles are loaded at start-up.
 

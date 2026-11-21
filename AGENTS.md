@@ -38,6 +38,7 @@
 
 - 一行灰字（11px / 600 字重）、文字靠左、**右侧一个下箭头 chevron**（折叠后转成 `›`）。
 - 三条必须**像素级对齐**（`x` 起点、宽度、label 起点、chevron 位置都一致）。
+- 工作区标题行里，「工作区」文字靠左，**搜索 / 筛选 / 新建那组图标必须贴着右边缘**——文字和图标之间留白，不许图标紧跟在文字后面（实现：`_sectionHeader` 内让 `_sectionLabel` `flex:1 1 auto` 吃掉剩余宽度）。
 - 整栏收成 48px 图标窄条（rail）时：**隐藏三条折叠条**，且不要按用户偏好把图标栏也折掉（否则得到一条空栏）。
 
 ### 1.5 长列表必须能滚到底
@@ -141,7 +142,9 @@ wtg9ga_regionArea
 | 功能区折叠条跑到底部/顺序错乱 | `_scrollArea` 是 grid，插在 `nav` 前面会被自动排布挪位；DOM 顺序 ≠ 视觉顺序 | 插在 `scrollRegion` 之前（外壳里包着 nav 的那条分支） |
 | 三条折叠条左右不对齐 | `regionArea` 在 `_scrollArea`（x=3,w=274），另两条在外壳/footArea（x=7,w=264） | `alignHeader()` 以功能区条为基准补 `margin-left/right` |
 | 测试时"合成滚轮"完全不滚动 | `new WheelEvent(...)` 是**不可信事件**，浏览器不会执行默认动作（滚动） | 必须用真实输入（CDP 的 wheel，即浏览器工具的滚动），或直接读 `clientHeight/scrollHeight` 判断可滚性 |
-| 测试时滚轮被吃掉、误判成"没修好" | 隔离宿主首屏弹「预览版说明」/「开始使用」，全屏遮罩把滚轮吞了 | 先关弹窗再测；测完记录一次 `elementFromPoint` 的结果，避免被遮罩骗 |
+| 测试时滚轮被吃掉、误判成"没修好" | 隔离宿主首屏弹「预览版说明」/「开始使用」，全屏遮罩把滚轮吞了，**而且每次刷新都会重新弹**（没有持久关闭状态） | 先关弹窗再测；用 `elementFromPoint` 检查命中的是不是 `_mask_` 遮罩 |
+| 图标怎么都不贴右（1.0.6 之前） | label 的 `flex:1 1 auto` 已经生效，但宿主在 `_sectionHeader` 末尾还放了**一个不可见占位 span**（类名形如 `_root_70kcw_1`，`flex:1 1 0px`、高 0、宽 62px），自由宽度全被它吃掉 | 给 `[class*="_sectionHeader"]>[class*="_root_"]` 写 `flex:0 0 0!important;min-width:0!important`，自由宽度才归 label |
+| 测试插件 "import failed / 1 entry did not activate" | 测试插件的 `client.js` 用了 `export` 语句，或没有自注册——装载契约是**脚本自调** `window.__ModuleLoader__.load({id, factory})`（见本仓库 `lib/client.js:21`），不是 ESM 导出 | 整个逻辑放进 `factory` 闭包里，文件里不要出现 `export`；`package.json` 必须有 `dsh.bundle`（否则整包 skip） |
 | `dsh plugin add` 说成功但代码没更新 | 依赖是 `file:` tgz 且**版本号没变**（1.0.5→1.0.5），pnpm 判定"已满足"→ `added 0`，exit 0 | 装之前先 `Remove-Item profiles\desktop\node_modules\dsh-sidebar-sections -Recurse -Force`，再 add |
 | 测试宿主污染/删掉真实 profile 的东西 | 用 junction 把测试 profile 的 `node_modules` 指向 `C:\Users\liming\.dsh\profiles\desktop\node_modules`，宿主/用户同时在装插件，pnpm 把测试包当 extraneous 清掉 | 测试宿主用**完全独立**的 `DSH_HOME`（例如 `E:\tmp\scNN`），`node_modules` 里只放真实目录 |
 | 某次测试宿主实际对着真实 `~/.dsh` 跑了 4 分钟 | 子 agent 里 bash 提前展开 `$env:DSH_HOME`，变量丢失，宿主回了默认 home | 起宿主后立刻核对：测试 home 的 `profiles/web/cordis.yml` 有没有被改写；没把握就别起 |
@@ -177,12 +180,12 @@ wtg9ga_regionArea
 ## 6. 提交流程
 
 ```powershell
-cd E:\work\ss
+cd E:/work/ss
 node --check lib/client.js
 git add -A
 git commit --amend --no-edit          # 未推送时统一 amend，保持一个提交
-git tag -f -a v1.0.5 -m "v1.0.5" HEAD
-git rev-parse HEAD ; git rev-parse "v1.0.5^{}"        # 两者必须相同（注意 ^{}，tag 是 annotated 对象）
+git tag -f -a v1.0.6 -m "v1.0.6" HEAD
+git rev-parse HEAD ; git rev-parse "v1.0.6^{}"        # 两者必须相同（注意 ^{}，tag 是 annotated 对象）
 ```
 
 > 打 tag 之后仍然可以往 `main` 上加**文档类**提交（例如 AGENTS.md），这时 `HEAD` 会比 tag 新，
@@ -193,13 +196,20 @@ git rev-parse HEAD ; git rev-parse "v1.0.5^{}"        # 两者必须相同（注
 安装到本机（本地验证 / 交付）：
 
 ```powershell
-cd E:\work\ss ; npm pack
-Copy-Item .\dsh-sidebar-sections-1.0.5.tgz "C:\Users\liming\.dsh\local-plugins\" -Force
+cd E:/work/ss ; npm pack
+Copy-Item .\dsh-sidebar-sections-1.0.6.tgz "C:\Users\liming\.dsh\local-plugins\" -Force
 Remove-Item "C:\Users\liming\.dsh\profiles\desktop\node_modules\dsh-sidebar-sections" -Recurse -Force
 & "C:\Users\liming\AppData\Local\Programs\DeepSeek Harness\resources\runtime\cli\bin\dsh.cmd" `
-    plugin --profile desktop add "file:C:/Users/liming/.dsh/local-plugins/dsh-sidebar-sections-1.0.5.tgz"
-Remove-Item .\dsh-sidebar-sections-1.0.5.tgz    # 仓库保持干净
+    plugin --profile desktop add "file:C:/Users/liming/.dsh/local-plugins/dsh-sidebar-sections-1.0.6.tgz"
+Remove-Item .\dsh-sidebar-sections-1.0.6.tgz    # 仓库保持干净
 ```
+
+> **注意**：`~/.dsh/AGENTS.md`（用户级全局约定）规定 DSH 运行期间**不要**对
+> `profiles\desktop` 执行任何 pnpm 操作（`dsh plugin add/remove` 会报
+> `[ERR_PNPM_EPERM] rename 'dsh-win-bash_tmp_*'` 并把 `@linxin666/dsh-win-bash`
+> 删残，`win_bash` 工具当场消失）。DSH 在跑时只能用「直接覆盖
+> `node_modules\dsh-sidebar-sections\lib\client.js`」这种非 pnpm 方式热交付；
+> 完整重装要等用户完全退出 DSH 之后再做。
 
 推送（需有效 PAT，见第 4 节最后两行）。改版本号时记得同步 `package.json`、`dsh.plugin.json`、两个 README。
 

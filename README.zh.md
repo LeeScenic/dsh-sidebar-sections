@@ -22,6 +22,14 @@
 
 设置区（`div._settingsArea`：呼叫按钮 + 账号头像）**永不参与折叠**，并且钉死在侧栏最底部，不随任何分区的开合上下移动。
 
+## 强制外观要求（属于契约，改坏任何一条都算回归）
+
+- 工作区标题行里，「工作区」文字靠左，**搜索 / 筛选 / 新建那组图标必须贴着右边缘**——文字和图标之间留白，不许图标紧跟在文字后面。
+- 三条折叠条**像素级对齐**：起点 `x`、宽度、文字起点、chevron 位置完全一致。
+- 设置区永远钉在最底部，不参与任何折叠。
+- 工作区列表很长时**列表自身滚动**，标题行钉住不滚，最后一行完整可见，不被状态区切掉。
+- 整栏收成 48px 图标窄条时，三条折叠条自动隐藏，图标栏本身不折叠。
+
 ## 新加的东西会自动归位
 
 不按 class 名单点名，而是**按位置**判定：
@@ -35,12 +43,12 @@
 ## 安装
 
 ```sh
-dsh plugin --profile web add "https://github.com/LeeScenic/dsh-sidebar-sections/releases/latest/download/dsh-sidebar-sections-1.0.5.tgz"
+dsh plugin --profile web add "https://github.com/LeeScenic/dsh-sidebar-sections/releases/latest/download/dsh-sidebar-sections-1.0.6.tgz"
 ```
 
-桌面版：`dsh plugin --profile desktop add "https://github.com/LeeScenic/dsh-sidebar-sections/releases/latest/download/dsh-sidebar-sections-1.0.5.tgz"`。
+桌面版：`dsh plugin --profile desktop add "https://github.com/LeeScenic/dsh-sidebar-sections/releases/latest/download/dsh-sidebar-sections-1.0.6.tgz"`。
 
-也可以直接从仓库装：`dsh plugin --profile desktop add "github:LeeScenic/dsh-sidebar-sections#v1.0.5"`。
+也可以直接从仓库装：`dsh plugin --profile desktop add "github:LeeScenic/dsh-sidebar-sections#v1.0.6"`。
 
 装完要**完全退出 DSH 再打开**——客户端 bundle 在启动时加载。
 
